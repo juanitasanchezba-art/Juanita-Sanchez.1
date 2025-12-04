@@ -1,356 +1,167 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Servicios de Traducción y Contenido</title>
-  <style>
-    :root {
-      --bg: #ffffff;
-      --panel: #f6f3ff;
-      --ink: #2d2d2d;
-      --accent: #a98bff;
-      --accent-dark: #906df8;
-      --border: #e5dbff;
-    }
+<!-- WIDGET COMPLETO: Daju IA Chat -->
+<div id="daju-chat-container">
 
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--ink);
-    }
+<style>
+  #chat-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #a98bff;
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 22px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    z-index: 999999;
+  }
 
-    header {
-      position: sticky;
-      top: 0;
-      background: rgba(255, 255, 255, 0.9);
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(6px);
-      z-index: 10;
-    }
+  #chat-window {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 320px;
+    height: 430px;
+    background: #ffffff;
+    border: 1px solid #e5dbff;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    display: none;
+    flex-direction: column;
+    z-index: 999999;
+  }
 
-    nav {
-      max-width: 1100px;
-      margin: auto;
-      padding: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+  #chat-header {
+    background: #a98bff;
+    color: white;
+    padding: 12px;
+    font-weight: bold;
+    border-radius: 12px 12px 0 0;
+    text-align: center;
+    font-size: 1.1rem;
+  }
 
-    nav .menu {
-      display: flex;
-      gap: 1.5rem;
-    }
+  #chat-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    font-size: 0.95rem;
+  }
 
-    nav a {
-      text-decoration: none;
-      color: var(--ink);
-      font-weight: 500;
-    }
+  .msg-user {
+    background: #f1eaff;
+    padding: 8px;
+    margin: 6px 0;
+    border-radius: 8px;
+    text-align: right;
+  }
 
-    .hero {
-      padding: 6rem 1.5rem;
-      max-width: 1100px;
-      margin: auto;
-      text-align: center;
-    }
+  .msg-bot {
+    background: #f6f3ff;
+    padding: 8px;
+    margin: 6px 0;
+    border-radius: 8px;
+  }
 
-    .badge {
-      display: inline-block;
-      padding: 0.4rem 0.8rem;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      font-size: 0.8rem;
-      margin-bottom: 1rem;
-    }
+  #chat-input-container {
+    padding: 10px;
+    display: flex;
+    border-top: 1px solid #ddd;
+  }
 
-    .hero h1 {
-      font-size: 2.4rem;
-      margin: 0.5rem 0 1rem;
-      color: var(--accent-dark);
-    }
+  #chat-input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
 
-    .hero p {
-      max-width: 650px;
-      margin: auto;
-      font-size: 1.1rem;
-    }
+  #send-btn {
+    background: #a98bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    margin-left: 6px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+</style>
 
-    .btns {
-      margin-top: 2rem;
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
+<button id="chat-button">💬</button>
 
-    .btn {
-      padding: 0.8rem 1.6rem;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: 0.2s;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: var(--accent-dark);
-    }
-
-    .btn-secondary {
-      background: var(--panel);
-      border: 1px solid var(--border);
-    }
-
-    section {
-      padding: 4rem 1.5rem;
-      max-width: 1100px;
-      margin: auto;
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 1rem;
-      font-size: 2rem;
-      color: var(--accent-dark);
-    }
-
-    .cards {
-      display: grid;
-      gap: 1.5rem;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      margin-top: 2rem;
-    }
-
-    .card {
-      background: var(--panel);
-      padding: 1.5rem;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-    }
-
-    .tags {
-      margin-top: 0.8rem;
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .tag {
-      background: white;
-      border: 1px solid var(--border);
-      padding: 0.3rem 0.6rem;
-      border-radius: 6px;
-      font-size: 0.8rem;
-    }
-
-    .steps {
-      margin-top: 2rem;
-      display: grid;
-      gap: 1.5rem;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    }
-
-    .step {
-      padding: 1.5rem;
-      background: var(--panel);
-      border-radius: 12px;
-      border: 1px solid var(--border);
-    }
-
-    .logos {
-      margin-top: 2rem;
-      display: flex;
-      gap: 1.5rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .logo-placeholder {
-      width: 120px;
-      height: 60px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-    }
-
-    details {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      padding: 1rem 1.2rem;
-      border-radius: 10px;
-      margin-bottom: 1rem;
-    }
-
-    summary {
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    footer {
-      text-align: center;
-      padding: 2rem;
-      background: var(--panel);
-      border-top: 1px solid var(--border);
-      margin-top: 3rem;
-    }
-
-    iframe {
-      width: 100%;
-      max-width: 700px;
-      height: 850px;
-      border: none;
-      margin: auto;
-      display: block;
-    }
-
-    @media(max-width: 700px){
-      nav .menu { display: none; }
-      iframe { height: 950px; }
-    }
-  </style>
-</head>
-
-<body>
-
-<header>
-  <nav>
-    <div><strong>Servicios Lingüísticos</strong></div>
-    <div class="menu">
-      <a href="#servicios">Servicios</a>
-      <a href="#metodologia">Metodología</a>
-      <a href="#clientes">Clientes</a>
-      <a href="#faq">FAQ</a>
-      <a href="#contacto">Contacto</a>
-    </div>
-  </nav>
-</header>
-
-<main>
-
-  <section class="hero">
-    <div class="badge">Traducción & Contenido Digital · EN/ES</div>
-    <h1>Creación de contenido y traducción profesional para empresas</h1>
-    <p>Apoyo a marcas y equipos en la producción de contenido claro, atractivo y bien traducido, garantizando coherencia y adaptación cultural entre inglés y español.</p>
-
-    <div class="btns">
-      <a href="#contacto"><button class="btn btn-primary">Contactar</button></a>
-      <a href="#servicios"><button class="btn btn-secondary">Ver servicios</button></a>
-    </div>
-  </section>
-
-  <section id="servicios">
-    <h2>Servicios</h2>
-    <p style="text-align:center;">Soluciones lingüísticas y de contenido adaptadas a las necesidades de empresas en Colombia y el mundo.</p>
-
-    <div class="cards">
-      <div class="card">
-        <h3>Traducción Inglés ↔ Español</h3>
-        <p>Traducción clara, natural y contextualizada para documentos, contenido web y materiales corporativos.</p>
-        <div class="tags">
-          <span class="tag">#traducción</span>
-          <span class="tag">#ENES</span>
-          <span class="tag">#adaptación</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>Creación de contenido</h3>
-        <p>Redacción profesional en español o inglés para blogs, sitios web, redes o materiales internos.</p>
-        <div class="tags">
-          <span class="tag">#contenidodigital</span>
-          <span class="tag">#copywriting</span>
-          <span class="tag">#bilingüe</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="metodologia">
-    <h2>Metodología</h2>
-
-    <div class="steps">
-      <div class="step">
-        <h3>1. Revisión de necesidades</h3>
-        <p>Analizo objetivos, tono y tipo de contenido requerido por la empresa.</p>
-      </div>
-      <div class="step">
-        <h3>2. Producción / Traducción</h3>
-        <p>Desarrollo o traduzco el contenido manteniendo calidad y coherencia.</p>
-      </div>
-      <div class="step">
-        <h3>3. Revisión final</h3>
-        <p>Ajustes finales para asegurar claridad y adaptación cultural.</p>
-      </div>
-      <div class="step">
-        <h3>4. Entrega</h3>
-        <p>Entrega en el formato requerido y soporte básico posterior.</p>
-      </div>
-    </div>
-  </section>
-
-  <section id="clientes">
-    <h2>Clientes</h2>
-    <p style="text-align:center;">He colaborado con proyectos y empresas que buscan comunicación clara entre inglés y español.</p>
-
-    <div class="logos">
-      <div class="logo-placeholder"></div>
-      <div class="logo-placeholder"></div>
-      <div class="logo-placeholder"></div>
-    </div>
-  </section>
-
-  <section id="faq">
-    <h2>Preguntas Frecuentes</h2>
-
-    <details>
-      <summary>¿Qué tipo de traducciones realizas?</summary>
-      <p>Traducción de contenido corporativo, académico, web y materiales internos.</p>
-    </details>
-
-    <details>
-      <summary>¿Puedes adaptar el contenido al tono de mi marca?</summary>
-      <p>Sí, ajusto el estilo según tu tono, audiencia y objetivos de comunicación.</p>
-    </details>
-
-    <details>
-      <summary>¿Los trabajos incluyen revisión?</summary>
-      <p>Sí, cada entrega incluye revisión básica y correcciones menores.</p>
-    </details>
-  </section>
-
-  <section id="contacto">
-    <h2>Contacto</h2>
-    <p style="text-align:center;">Completa el siguiente formulario y me pondré en contacto contigo.</p>
-
-    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSebIFV6A8pEtEcw1GYIX470sKnpJ5hYdr9VPRFd1pUDETUusg/viewform?embedded=true" frameborder="0">Cargando…</iframe>
-  </section>
-
-</main>
-
-<footer>
-  © 2025 · Servicios Lingüísticos · Colombia
-</footer>
+<div id="chat-window">
+  <div id="chat-header">Daju IA</div>
+  <div id="chat-messages"></div>
+  
+  <div id="chat-input-container">
+    <input type="text" id="chat-input" placeholder="Escribe un mensaje..." />
+    <button id="send-btn">Enviar</button>
+  </div>
+</div>
 
 <script>
-  // Scroll suave
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener("click", function(e){
-      e.preventDefault();
-      document.querySelector(this.getAttribute("href")).scrollIntoView({
-        behavior: "smooth"
-      });
+  (function(){
+    const chatBtn = document.getElementById("chat-button");
+    const chatWindow = document.getElementById("chat-window");
+    const sendBtn = document.getElementById("send-btn");
+    const chatInput = document.getElementById("chat-input");
+    const chatMessages = document.getElementById("chat-messages");
+
+    let firstOpen = true;
+
+    function addMessage(text, sender) {
+      const div = document.createElement("div");
+      div.className = sender === "user" ? "msg-user" : "msg-bot";
+      div.textContent = text;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    chatBtn.onclick = () => {
+      const closed = chatWindow.style.display === "none" || chatWindow.style.display === "";
+      chatWindow.style.display = closed ? "flex" : "none";
+
+      if (closed && firstOpen) {
+        setTimeout(() => {
+          addMessage("Hola 👋 Soy Daju IA. ¿En qué puedo ayudarte hoy?", "bot");
+        }, 300);
+        firstOpen = false;
+      }
+    };
+
+    async function sendMessage() {
+      const message = chatInput.value.trim();
+      if (!message) return;
+
+      addMessage(message, "user");
+      chatInput.value = "";
+
+      try {
+        const res = await fetch(
+          "https://juanita.app.n8n.cloud/webhook/62af3e9c-1b85-4831-b6d2-25283f0a0538/chat",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message })
+          }
+        );
+
+        const data = await res.json();
+        addMessage(data.reply || "No recibí respuesta del servidor.", "bot");
+
+      } catch (error) {
+        addMessage("Hubo un error al conectar con Daju IA.", "bot");
+      }
+    }
+
+    sendBtn.onclick = sendMessage;
+    chatInput.addEventListener("keypress", e => {
+      if (e.key === "Enter") sendMessage();
     });
-  });
+
+  })();
 </script>
 
-</body>
-</html>
+</div>
+<!-- FIN WIDGET -->
